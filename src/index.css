@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-color: #ffffff;
+  }
+  
+  html {
+    scroll-behavior: auto;
+    scroll-padding-top: 100px;
+  }
+
+  body {
+    @apply bg-zinc-950 text-white font-sans;
+    overflow-x: hidden;
+    /* Tambahkan baris ini untuk mematikan kursor asli */
+    cursor: none; 
+  }
+
+  /* Pastikan kursor asli juga mati saat hover elemen interaktif */
+  a, button {
+    cursor: none !important;
+  }
+
+  .lenis.lenis-smooth {
+    height: auto;
+  }
+}
