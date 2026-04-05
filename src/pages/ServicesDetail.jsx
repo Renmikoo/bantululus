@@ -130,7 +130,7 @@ export default function ServicesDetail() {
                 
                 {/* CTA Bawah Khusus Layanan Ini */}
                 <div className="mt-12">
-                  <a href="https://wa.me/6281234567890" target="_blank" rel="noreferrer" className="inline-block bg-black text-white px-8 py-4 rounded-full font-bold tracking-widest text-sm hover:bg-white-600 hover:scale-105 transition-all duration-300">
+                  <a href="https://www.instagram.com/jokitugasbybantululus/" target="_blank" rel="noreferrer" className="inline-block bg-black text-white px-8 py-4 rounded-full font-bold tracking-widest text-sm hover:bg-white-600 hover:scale-105 transition-all duration-300">
                     KONSULTASI {service.title.toUpperCase()}
                   </a>
                 </div>
