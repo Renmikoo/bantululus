@@ -4,16 +4,10 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { Link } from 'react-router-dom'; 
-import Magnetic from '../components/Magnetic';// <--- Tambahkan import ini
+import Magnetic from '../components/Magnetic';
 gsap.registerPlugin(ScrollTrigger);
 
-const projects = [
-  { title: "Laporan Kerja Praktek", category: "Web App & Report", img: "https://images.unsplash.com/photo-1744051518421-1eaf2fbde680?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8c2tyaXBzaXxlbnwwfHwwfHx8MA%3D%3D" },
-  { title: "Playzone", category: "Rental & Billing System", img: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?q=80&w=800&auto=format&fit=crop" },
-  { title: "MRP System", category: "Inventory & Kanban", img: "https://plus.unsplash.com/premium_photo-1664301904972-ddd48a790a9b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8U2lzdGVtJTIwTWF0ZXJpYWwlMjBSZXF1aXJlbWVudHMlMjBQbGFubmluZ3xlbnwwfHwwfHx8MA%3D%3D" },
-  { title: "Kedai Dz98", category: "Admin & Cashier Dashboard", img: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=800&auto=format&fit=crop" },
-];
-const logoVideoUrl = "/bg-video.mp4"; 
+const projects = [ { title: "Laporan Kerja Praktek & PPL", category: "Web App & Report", img: "/1.png" }, { title: "Revisi Laporan", category: "Kerja Praktek & Program Perangkat Lunak", img: "2.png" }, { title: "IASBandara", category: "Web App Absence", img: "/absensi.png" }, { title: "MRP SYSTEM & E-Library", category: "Web App", img: "/web.png" }, ];  
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,10 +19,11 @@ export default function Home() {
   const bgImageRef = useRef(null);
   const maskLayerRef = useRef(null);
   const servicesRef = useRef(null);
+  const pricingRef = useRef(null);
   const projectListRef = useRef(null);
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
+  const resultSectionRef = useRef(null); // Ref baru untuk section HASIL
   const horizontalTrackRef = useRef(null);
+
   useEffect(() => {
     // 1. SETUP LENIS SMOOTH SCROLL
     const lenis = new Lenis({ duration: 1.5, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
@@ -38,30 +33,25 @@ export default function Home() {
 
     // 2. MOUSE PARALLAX & SCROLL BACKGROUND FOTO
     const bg = bgImageRef.current;
-    let moveParallax; // Deklarasikan di luar agar bisa di-cleanup
+    let moveParallax; 
     
     if (bg) {
-      // GSAP quickTo untuk pergerakan mouse tanpa lag
       const xTo = gsap.quickTo(bg, "x", { duration: 1, ease: "power3.out" });
       const yTo = gsap.quickTo(bg, "y", { duration: 1, ease: "power3.out" });
 
       moveParallax = (e) => {
-        // Hitung posisi mouse dari tengah layar (-0.5 sampai 0.5)
-        const xMovement = (e.clientX / window.innerWidth - 0.5) * 80; // Maksimal geser 80px
+        const xMovement = (e.clientX / window.innerWidth - 0.5) * 80; 
         const yMovement = (e.clientY / window.innerHeight - 0.5) * 80;
-        
-        // Geser gambar berlawanan arah dengan mouse
         xTo(-xMovement);
         yTo(-yMovement);
       };
 
       window.addEventListener("mousemove", moveParallax);
 
-      // Efek gambar turun & memudar saat discroll ke bawah
       gsap.to(bg, {
         y: 200, 
         opacity: 0, 
-        scale: 1.1, // Sedikit membesar saat scroll
+        scale: 1.1, 
         ease: "none",
         scrollTrigger: {
           trigger: heroRef.current,
@@ -78,8 +68,7 @@ export default function Home() {
       { y: 0, opacity: 1, duration: 1, stagger: 0.15, ease: "power4.out", delay: 0.2 }
     );
 
-    // ... (Logika animasi GSAP lainnya seperti Marquee & 3D text biarkan di sini) ...
-    // ANIMASI GSAP
+    // ANIMASI GSAP LOADING
     const tl = gsap.timeline();
     let progress = { val: 0 };
     tl.to(progress, {
@@ -102,57 +91,108 @@ export default function Home() {
     };
     window.addEventListener("mousemove", handleMouseMove);
 
-    gsap.to(videoRef.current, {
-      scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: true },
-      y: 200, opacity: 0, scale: 1.2
-    });
-
     gsap.to(".marquee-text", {
       xPercent: -50, ease: "none",
       scrollTrigger: { trigger: servicesRef.current, start: "top bottom", end: "bottom top", scrub: 1 }
     });
 
+    // --- ANIMASI SCROLL INTERAKTIF UNTUK PRICING SECTION ---
+    if (pricingRef.current) {
+      const tlPricing = gsap.timeline({
+        scrollTrigger: {
+          trigger: pricingRef.current,
+          start: "top 75%",
+        }
+      });
+
+      tlPricing.fromTo(".pricing-text-anim",
+        { y: 60, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power4.out" }
+      )
+      .fromTo(".pricing-card-anim",
+        { y: 80, opacity: 0, scale: 0.95 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.8, stagger: 0.15, ease: "power3.out" },
+        "-=0.4" 
+      )
+      .fromTo(".pricing-btn-anim",
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
+        "-=0.4"
+      );
+    }
+
+    // --- ANIMASI ENTRANCE UNTUK WORK / PROJECTS SECTION ---
+    if (projectListRef.current) {
+      gsap.fromTo(".project-card-entrance",
+        { opacity: 0, y: 150, scale: 0.9 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 1.2,
+          stagger: 0.2, 
+          ease: "power4.out",
+          scrollTrigger: {
+            trigger: projectListRef.current,
+            start: "top 75%", 
+          }
+        }
+      );
+    }
+
+    // --- ANIMASI INTERAKTIF UNTUK SECTION HASIL ---
+    if (resultSectionRef.current) {
+      gsap.fromTo(".result-anim",
+        { opacity: 0, y: 100, scale: 0.95 }, // Posisi awal: di bawah, transparan, agak kecil
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 1,
+          stagger: 0.15, // Muncul berurutan
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: resultSectionRef.current,
+            start: "top 60%", // Terpicu saat masuk 60% layar
+          }
+        }
+      );
+    }
+    // -------------------------------------------------
+
+    // Animasi Horizontal Scroll
     const track = horizontalTrackRef.current;
     if (track) {
       gsap.to(track, {
-        // Menggeser kontainer ke kiri sepanjang sisa lebarnya dikurangi lebar layar
         x: () => -(track.scrollWidth - window.innerWidth),
         ease: "none",
         scrollTrigger: {
           trigger: projectListRef.current,
-          pin: true, // Menahan layar (sticky) selama animasi berjalan
-          scrub: 1,  // Sinkron dengan scroll roda mouse
-          end: () => "+=" + (track.scrollWidth - window.innerWidth) // Jarak scroll
+          pin: true, 
+          scrub: 1,  
+          end: () => "+=" + (track.scrollWidth - window.innerWidth) 
         }
       });
     }
+
+    // Animasi Teks 3D Lipat (Berlaku untuk semua .text-3d di halaman)
     const texts3D = gsap.utils.toArray('.text-3d');
-    
     texts3D.forEach((text) => {
-      // Set posisi awal teks: terlipat ke belakang 90 derajat dan tembus pandang
       gsap.fromTo(text, 
-        { 
-          rotationX: -90, 
-          yPercent: 100, 
-          opacity: 0 
-        },
+        { rotationX: -90, yPercent: 100, opacity: 0 },
         {
-          rotationX: 0,
-          yPercent: 0,
-          opacity: 1,
-          ease: "power3.out",
+          rotationX: 0, yPercent: 0, opacity: 1, ease: "power3.out",
           scrollTrigger: {
-            trigger: text.parentElement, // Terpicu saat bungkusnya masuk layar
-            start: "top 90%",           // Animasi mulai saat elemen di bawah layar
-            end: "top 50%",             // Selesai saat elemen di tengah layar
-            scrub: 1.5                  // Scrub: animasi maju-mundur sinkron dengan scroll
+            trigger: text.parentElement,
+            start: "top 90%",          
+            end: "top 50%",            
+            scrub: 1.5                  
           }
         }
       );
     });
 
     return () => {
-      // Hapus event listener saat pindah halaman
       if (moveParallax) window.removeEventListener("mousemove", moveParallax);
       lenis.destroy();
       ScrollTrigger.getAll().forEach(t => t.kill());
@@ -161,17 +201,11 @@ export default function Home() {
 
   useEffect(() => {
     if (isMenuOpen) {
-      // Teks meluncur naik dari bawah satu per satu
       gsap.fromTo(".menu-link-item",
-        { y: 150, opacity: 0, rotationX: -30 }, // Posisi awal (tersembunyi di bawah)
+        { y: 150, opacity: 0, rotationX: -30 }, 
         { 
-          y: 0, 
-          opacity: 1, 
-          rotationX: 0, 
-          duration: 0.8, 
-          stagger: 0.1, // Jeda kemunculan antar teks
-          ease: "back.out(1.2)", // Sedikit efek membal di akhir
-          delay: 0.3 // Menunggu layar hitamnya turun sebentar
+          y: 0, opacity: 1, rotationX: 0, duration: 0.8, 
+          stagger: 0.1, ease: "back.out(1.2)", delay: 0.3 
         }
       );
     }
@@ -191,7 +225,6 @@ export default function Home() {
           
           <div className="flex justify-between items-center w-full">
             <div className="text-sm font-bold tracking-[0.3em] text-zinc-500">BANTULULUS</div>
-            {/* Tombol Close dengan Efek Magnet */}
             <Magnetic>
               <button onClick={() => setIsMenuOpen(false)} className="p-4 rounded-full hover:rotate-90 bg-white/5 hover:bg-white/10 transition-all duration-300">
                 <X size={32} strokeWidth={1.5} />
@@ -201,21 +234,36 @@ export default function Home() {
 
           <div className="flex flex-col-reverse md:flex-row w-full justify-between items-end pb-8 mt-12 md:mt-0 border-b border-white/10">
             <div className="flex flex-col gap-4 mt-12 md:mt-0 text-zinc-400 w-full md:w-auto text-left text-sm uppercase tracking-widest font-medium">
-              <a href="mailto:admin@bantululus.com" className="flex items-center gap-3 hover:text-white transition"><Mail size={16}/> ADMIN@BANTULULUS.COM</a>
+              <a href="https://www.instagram.com/jokitugasbybantululus/" className="flex items-center gap-3 hover:text-white transition"><Mail size={16}/> @jokitugasbybantululus</a>
             </div>
             <nav className="flex flex-col text-right w-full md:w-auto">
-              {['HOME', 'SERVICES', 'ABOUT', 'WORK', 'CONTACT',].map((item) => {
-                const targetId = item === 'HOME' ? '#home' : `#${item.toLowerCase()}`;
+              {['HOME', 'LAYANAN', 'PROJECT', 'TENTANGKAMI', 'PRICELIST', 'CONTACT'].map((item) => {
+                let targetId = '';
+                let isRoute = false;
+
+                if (item === 'HOME') targetId = '#home';
+                else if (item === 'PRICELIST') { targetId = '/pricelist'; isRoute = true; }
+                else targetId = `#${item.toLowerCase()}`;
+
                 return (
-                  // Bungkus overflow-hidden agar teks tidak tumpah sebelum dianimasikan
                   <div key={item} className="overflow-hidden py-1">
-                    <a 
-                      href={targetId} 
-                      onClick={() => setIsMenuOpen(false)} 
-                      className="menu-link-item block text-[12vw] md:text-[7vw] font-black tracking-tighter hover:text-gray-500 hover:-translate-x-4 transition-all duration-300 leading-[0.85] pb-2 cursor-none origin-bottom"
-                    >
-                      {item}
-                    </a>
+                    {isRoute ? (
+                      <Link 
+                        to={targetId} 
+                        onClick={() => setIsMenuOpen(false)} 
+                        className="menu-link-item block text-[12vw] md:text-[7vw] font-black tracking-tighter hover:text-gray-500 hover:-translate-x-4 transition-all duration-300 leading-[0.85] pb-2 cursor-none origin-bottom"
+                      >
+                        {item}
+                      </Link>
+                    ) : (
+                      <a 
+                        href={targetId} 
+                        onClick={() => setIsMenuOpen(false)} 
+                        className="menu-link-item block text-[12vw] md:text-[7vw] font-black tracking-tighter hover:text-gray-500 hover:-translate-x-4 transition-all duration-300 leading-[0.85] pb-2 cursor-none origin-bottom"
+                      >
+                        {item}
+                      </a>
+                    )}
                   </div>
                 );
               })}
@@ -229,10 +277,11 @@ export default function Home() {
       <header className="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] md:w-[80%] max-w-5xl z-[80] flex justify-between items-center px-6 py-4 bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full shadow-2xl">
         <div className="text-sm font-black tracking-[0.2em] text-white">BANTULULUS</div>
         <nav className="hidden md:flex items-center gap-8 text-xs font-bold tracking-[0.15em] text-zinc-400">
-          <a href="#services" className="hover:text-white transition-colors cursor-pointer">SERVICES</a>
-          <a href="#work" className="hover:text-white transition-colors cursor-pointer">WORK</a>
-          <a href="#about" className="hover:text-white transition-colors cursor-pointer">ABOUT</a>
-          <a href="/behind-the-scenes" className="hover:text-white transition-colors cursor-pointer">BEHIND</a>
+          <a href="#services" className="hover:text-white transition-colors cursor-pointer">LAYANAN</a>
+          <a href="#work" className="hover:text-white transition-colors cursor-pointer">PROJECT</a>
+          <a href="#about" className="hover:text-white transition-colors cursor-pointer">TENTANG KAMI</a>
+          <Link to="/pricelist" className="hover:text-white transition-colors cursor-pointer">PRICELIST</Link>
+          <Link to="/behind-the-scenes" className="hover:text-white transition-colors cursor-pointer">BEHIND</Link>
         </nav>
         <div className="flex items-center gap-4">
           <Magnetic>
@@ -246,15 +295,12 @@ export default function Home() {
       {/* HERO SECTION DENGAN PHOTO PARALLAX */}
       <section id="home" ref={heroRef} className="relative h-screen w-full bg-black overflow-hidden flex items-center justify-center">
         
-        {/* Background Image Container (110% agar bisa digeser mouse) */}
         <div ref={bgImageRef} className="absolute inset-[-5%] w-[110%] h-[110%] z-0 origin-center">
-          {/* Ubah link src di bawah ini dengan foto pilihan Anda */}
           <img 
             src="/logo.jpg" 
             alt="BantuLulus Workspace" 
             className="w-full h-full object-cover opacity-40 filter grayscale"
           />
-          {/* Efek gradasi hitam di bagian bawah agar teks lebih terbaca */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30"></div>
         </div>
 
@@ -278,8 +324,6 @@ export default function Home() {
           </div>
         </div>
         
-        {/* ... (Elemen maskLayerRef ke bawah tetap sama persis) ... */}
-
         <div ref={maskLayerRef} className="absolute inset-0 bg-white-600 flex flex-col items-center justify-center text-center p-6 pointer-events-none z-20" style={{ clipPath: "circle(0px at 50% 50%)" }}>
           <div className="absolute inset-0 opacity-20 flex flex-wrap content-start text-[2.5rem] font-black uppercase overflow-hidden leading-none select-none text-black z-0">
             {Array(150).fill("BANTULULUS ACADEMIC EXCELLENCE ").join("")}
@@ -290,10 +334,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SERVICES */}
+      {/* SERVICES SECTION */}
       <section id="services" ref={servicesRef} className="py-40 bg-black text-white relative overflow-hidden">
         <h2 className="marquee-text text-[18vw] font-black text-zinc-900/50 leading-none absolute top-10 whitespace-nowrap select-none">
-          SERVICES SERVICES SERVICES 
+          LAYANAN LAYANAN LAYANAN 
         </h2>
         <div className="relative z-10 max-w-6xl mx-auto px-6 mt-32 flex flex-col w-full">
             <div className="group border-t border-zinc-800 hover:border-white transition-colors duration-500 py-12 flex flex-col md:flex-row justify-between md:items-center gap-8">
@@ -313,27 +357,57 @@ export default function Home() {
             <div className="group border-t border-zinc-800 hover:border-white transition-colors duration-500 py-12 flex flex-col md:flex-row justify-between md:items-center gap-8">
               <div className="flex gap-8 md:w-1/2">
                 <span className="text-zinc-600 font-mono text-xl group-hover:text-blue-500">03</span>
-                <h3 className="text-4xl md:text-5xl font-light group-hover:italic transition-all">DATA <span className="font-black">ANALYSYS</span></h3>
+                <h3 className="text-4xl md:text-5xl font-light group-hover:italic transition-all">DATA <span className="font-black">ANALYSIS</span></h3>
               </div>
               <p className="text-zinc-400 md:w-1/3 text-lg font-light leading-relaxed group-hover:text-zinc-200">Mengubah Angka Mentah Menjadi Kesimpulan Valid.</p>
             </div>
-            <div className="relative z-10 max-w-6xl mx-auto px-6 mt-16 flex justify-center">
-          <Link to="/services" className="inline-flex items-center gap-3 border border-white/30 px-10 py-5 rounded-full font-bold tracking-widest text-sm hover:bg-white hover:text-black transition-all duration-300">
-            LIHAT DETAIL LAYANAN KAMI <ArrowUpRight size={20} />
-          </Link>
+            <div className="relative z-10 max-w-6xl mx-auto px-6 mt-16 flex justify-center"> 
+              <Link to="/services" className="inline-flex items-center gap-3 border border-white/30 px-10 py-5 rounded-full font-bold tracking-widest text-sm hover:bg-white hover:text-black transition-all duration-300">
+              LIHAT DETAIL LAYANAN KAMI <ArrowUpRight size={20} />
+             </Link> 
+             </div>
         </div>
+      </section>
+
+      {/* ================= PRICING PREVIEW SECTION ================= */}
+      <section ref={pricingRef} className="py-32 px-6 md:px-[10vw] bg-zinc-950 text-white border-t border-zinc-900 flex flex-col items-center justify-center text-center overflow-hidden">
+        <h3 className="pricing-text-anim text-sm font-bold tracking-[0.3em] text-zinc-500 uppercase mb-8">
+          TRANSPARENT PRICING
+        </h3>
+        <h2 className="pricing-text-anim text-[10vw] md:text-[6vw] font-black tracking-tighter leading-[0.9] uppercase mb-10">
+          KUALITAS PREMIUM, <br/>
+          <span className="text-zinc-600 italic font-light">HARGA RASIONAL.</span>
+        </h2>
+        <p className="pricing-text-anim text-zinc-400 text-lg md:text-xl font-light max-w-2xl mb-16">
+          Berbagai pilihan layanan dari Joki Tugas Akademik hingga Pembuatan Website dan Pengelolaan Media Sosial, disesuaikan dengan kebutuhanmu.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mb-16">
+          {['Akademik', 'Digital & Kreatif', 'Tambahan'].map((cat, i) => (
+            <div key={i} className="pricing-card-anim border border-zinc-800 rounded-2xl p-8 hover:bg-zinc-900 hover:border-zinc-600 transition-all duration-500 flex flex-col justify-between items-start text-left group cursor-pointer">
+              <div>
+                <span className="text-zinc-600 font-mono text-sm mb-4 block">0{i + 1}</span>
+                <h4 className="text-2xl font-bold mb-4 group-hover:italic transition-all">{cat}</h4>
+                <p className="text-zinc-500 text-sm font-light">Solusi tuntas untuk kebutuhan {cat.toLowerCase()} kamu. Dikerjakan rapi dan tepat waktu.</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="pricing-btn-anim">
+          <Magnetic>
+            <Link to="/pricelist" className="inline-flex items-center gap-3 bg-white text-black px-10 py-5 rounded-full font-bold tracking-widest text-sm hover:scale-105 transition-transform duration-300 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+              LIHAT DETAIL HARGA <ArrowUpRight size={20} />
+            </Link>
+          </Magnetic>
         </div>
       </section>
 
       {/* ================= WORK / PROJECTS HORIZONTAL SCROLL ================= */}
       <section id="work" ref={projectListRef} className="bg-zinc-50 h-screen flex items-center relative overflow-hidden">
-        
-        {/* Kontainer Jalur Horizontal */}
         <div ref={horizontalTrackRef} className="flex gap-12 md:gap-24 px-6 md:px-[10vw] w-max items-center h-full">
           {projects.map((proj, idx) => (
-            <div key={idx} className="project-panel w-[85vw] md:w-[55vw] flex flex-col gap-6 shrink-0 group">
-              
-              {/* Pembungkus Gambar dengan Efek Hover */}
+            <div key={idx} className="project-card-entrance project-panel w-[85vw] md:w-[55vw] flex flex-col gap-6 shrink-0 group">
               <div className="w-full aspect-[4/3] md:aspect-[16/10] overflow-hidden rounded-xl bg-zinc-200 shadow-xl relative cursor-pointer">
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
                 <img 
@@ -342,8 +416,6 @@ export default function Home() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)]" 
                 />
               </div>
-
-              {/* Teks Deskripsi */}
               <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-2 px-2">
                 <h3 className="text-4xl md:text-6xl font-black text-zinc-900 tracking-tighter uppercase leading-none">
                   {proj.title}
@@ -352,11 +424,11 @@ export default function Home() {
                   {proj.category}
                 </p>
               </div>
-
             </div>
           ))}
         </div>
       </section>
+      
       {/* ================= ABOUT SECTION ================= */}
       <section id="about" className="py-32 px-6 bg-white border-y border-zinc-200">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-20">
@@ -370,10 +442,9 @@ export default function Home() {
           </div>
           
           <div className="md:w-7/12">
-            {/* Gambar ini akan berwarna hitam putih, dan memunculkan warna saat di-hover */}
             <div className="aspect-[4/3] w-full bg-zinc-100 overflow-hidden rounded-xl shadow-inner border border-zinc-200">
               <img 
-                src="/logo.jpg" 
+                src="/4.jpg" 
                 alt="BantuLulus Workspace" 
                 className="w-full h-full object-cover filter grayscale contrast-125 hover:grayscale-0 transition duration-1000" 
               />
@@ -381,21 +452,67 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <section className="relative min-h-[80vh] bg-zinc-950 text-white flex flex-col items-center justify-center overflow-hidden border-t border-zinc-900" style={{ perspective: "1000px" }}>
-        <div className="flex flex-col items-center text-[10vw] md:text-[8vw] font-black tracking-tighter leading-[0.85] uppercase">
-          {/* Bungkus dengan overflow-hidden agar teks seolah muncul dari dalam tanah */}
+
+      {/* ================= SECTION HASIL / BUKTI KUALITAS (REPLACEMENT) ================= */}
+      <section ref={resultSectionRef} className="relative py-40 min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center overflow-hidden border-t border-zinc-900" style={{ perspective: "1000px" }}>
+        
+        {/* Background Animation (Aurora/Orbs) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] bg-zinc-800/40 blur-[100px] md:blur-[150px] rounded-full mix-blend-screen animate-pulse" style={{ animationDuration: '4s' }}></div>
+          <div className="absolute top-[20%] right-[-10%] w-[40vw] h-[40vw] bg-blue-900/20 blur-[100px] md:blur-[120px] rounded-full mix-blend-screen animate-pulse" style={{ animationDuration: '7s', animationDelay: '1s' }}></div>
+          <div className="absolute -bottom-[20%] left-[20%] w-[60vw] h-[60vw] bg-zinc-800/30 blur-[100px] md:blur-[150px] rounded-full mix-blend-screen animate-pulse" style={{ animationDuration: '5s', animationDelay: '2s' }}></div>
+          <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}></div>
+        </div>
+
+        {/* 3D Animated Headline */}
+        <div className="relative z-10 flex flex-col items-center text-[10vw] md:text-[8vw] font-black tracking-tighter leading-[0.85] uppercase mb-16 text-center">
           <div className="overflow-hidden py-2">
-            <div className="text-3d origin-bottom">ELEVATE</div>
+            <div className="text-3d origin-bottom">BUKTIKAN</div>
           </div>
           <div className="overflow-hidden py-2">
-            <div className="text-3d origin-bottom text-zinc-500 italic font-light">YOUR</div>
+            <div className="text-3d origin-bottom text-zinc-500 italic font-light">KUALITAS</div>
           </div>
           <div className="overflow-hidden py-2">
-            <div className="text-3d origin-bottom">ACADEMIC</div>
+            <div className="text-3d origin-bottom">HASIL</div>
           </div>
           <div className="overflow-hidden py-2">
-            <div className="text-3d origin-bottom text-gray-600">JOURNEY.</div>
+            <div className="text-3d origin-bottom text-gray-600">KAMI.</div>
           </div>
+        </div>
+
+        {/* Paragraf Pendukung & Kartu Statistik */}
+        <div className="relative z-10 flex flex-col items-center max-w-5xl mx-auto px-6 text-center">
+          
+          <p className="result-anim text-zinc-400 text-lg md:text-2xl font-light mb-20 max-w-3xl leading-relaxed">
+            Bukan sekadar janji, kami memberikan hasil nyata. Setiap baris kode, kalimat laporan, dan *slide* presentasi dikerjakan dengan standar tertinggi. Kami memastikan tugas Anda tuntas, rapi, dan siap meraih nilai maksimal.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+            {/* Stat Card 1 */}
+            <div className="result-anim border border-zinc-800/50 rounded-2xl p-8 bg-zinc-900/30 backdrop-blur-sm hover:bg-zinc-800/50 transition-colors duration-500">
+              <h4 className="text-4xl md:text-5xl font-black text-white mb-3">99<span className="text-zinc-500">%</span></h4>
+              <p className="text-zinc-400 text-sm tracking-widest uppercase font-bold">ACC / Kelulusan</p>
+            </div>
+            
+            {/* Stat Card 2 */}
+            <div className="result-anim border border-zinc-800/50 rounded-2xl p-8 bg-zinc-900/30 backdrop-blur-sm hover:bg-zinc-800/50 transition-colors duration-500">
+              <h4 className="text-4xl md:text-5xl font-black text-white mb-3">100<span className="text-zinc-500">%</span></h4>
+              <p className="text-zinc-400 text-sm tracking-widest uppercase font-bold">Bebas Plagiasi</p>
+            </div>
+            
+            {/* Stat Card 3 */}
+            <div className="result-anim border border-zinc-800/50 rounded-2xl p-8 bg-zinc-900/30 backdrop-blur-sm hover:bg-zinc-800/50 transition-colors duration-500">
+              <h4 className="text-4xl md:text-5xl font-black text-white mb-3">24<span className="text-zinc-500">/7</span></h4>
+              <p className="text-zinc-400 text-sm tracking-widest uppercase font-bold">Support Revisi</p>
+            </div>
+
+            {/* Stat Card 4 */}
+            <div className="result-anim border border-zinc-800/50 rounded-2xl p-8 bg-zinc-900/30 backdrop-blur-sm hover:bg-zinc-800/50 transition-colors duration-500">
+              <h4 className="text-4xl md:text-5xl font-black text-white mb-3">20<span className="text-zinc-500">+</span></h4>
+              <p className="text-zinc-400 text-sm tracking-widest uppercase font-bold">Project Selesai</p>
+            </div>
+          </div>
+
         </div>
       </section>
 
